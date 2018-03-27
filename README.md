@@ -58,6 +58,24 @@ Important: make sure libsvm-3.20 in the 3rd_party directory is used. Other versi
 
 We provide our own detection using SubCNN [1] on the KITTI tracking dataset [here](https://drive.google.com/open?id=0B4WdmTHU8V7Vd29GeFBqdl9yQXM).
 
+### MY CHANGES!!!
+To run the code correctly in WATSON, I had to make the following changes:
+
+In ```imResample.cpp```, change the data type of ```ns```,``` ms[3]```, ```nCh``` to ```size_t```
+
+In ```compile.m```, add ```-v GCC='/usr/bin/gcc-4.9'``` because MATLAB R2017a doesn't support gcc-5
+
+Add following lines to ```~/.zshrc``` file
+
+	export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+	export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libopencv_core.so.2.4:libopencv_imgproc.so.2.4:libopencv_video.so.2.4
+
+Then I make a link for ```libstdc++.so.6``` since the one installed with matlab doesn't have ```GLIBCXX_3.4.21```
+
+	sudo ln -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/local/MATLAB/R2017b/sys/os/glnxa64/libstdc++.so.6
+	
+Finally, compile the code.
+
 ### References
 
 [1] Y. Xiang, W. Choi, Y. Lin and S. Savarese. Subcategory-aware Convolutional Neural Networks for Object Proposals and Detection. In IEEE Winter Conference on Applications of Computer Vision (WACV), 2017.
