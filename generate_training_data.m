@@ -6,21 +6,29 @@
 % --------------------------------------------------------
 %
 % generate training data
-function [dres_train, dres_det, labels] = generate_training_data(seq_idx, dres_image, opt)
+% function [dres_train, dres_det, labels] = generate_training_data(seq_idx, dres_image, opt)
+function [dres_train, dres_det, labels] = generate_training_data(img_folder, dres_image, opt)
 
 % is_show = 0;
 
-seq_name = opt.mot2d_train_seqs{seq_idx};
+% seq_name = opt.mot2d_train_seqs{seq_idx};
 seq_set = 'train';
-
+seq_name = 'KITTI-tracking'
 % read detections
-filename = fullfile(opt.mot, opt.mot2d, seq_set, seq_name, 'det', 'det.txt');
+% filename = fullfile(opt.mot, opt.mot2d, seq_set, seq_name, 'det', 'det.txt');
+% filename = fullfile(opt.mot, seq_name, seq_set, 'det', '0000.txt');
+filename = fullfile(opt.mot, seq_name, seq_set, 'det', [img_folder(end-3:end) '.txt']);
+
 dres_det = read_mot2dres(filename);
+dres_det.fr = dres_det.fr + 1; % !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 
 % read ground truth
-filename = fullfile(opt.mot, opt.mot2d, seq_set, seq_name, 'gt', 'gt.txt');
+% filename = fullfile(opt.mot, opt.mot2d, seq_set, seq_name, 'gt', 'gt.txt');
+% filename = fullfile(opt.mot, seq_name, seq_set, 'gt', '0000.txt');
+filename = fullfile(opt.mot, seq_name, seq_set, 'gt', [img_folder(end-3:end) '.txt']);
 dres_gt = read_mot2dres(filename);
 dres_gt = fix_groundtruth(seq_name, dres_gt);
+dres_gt.fr = dres_gt.fr +  1; % !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 y_gt = dres_gt.y + dres_gt.h;
 
 % collect true positives and false alarms from detections

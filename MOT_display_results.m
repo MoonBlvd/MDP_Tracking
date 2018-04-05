@@ -11,35 +11,43 @@ is_save = 1;
 opt = globals();
 N = numel(opt.mot2d_test_seqs);
 seq_set = 'test';
-
-for seq_idx = 1:N
+sample_interval = 1;
+for seq_idx = 1:1
     close all;
     hf = figure(1);
     seq_name = opt.mot2d_test_seqs{seq_idx};
+    seq_name = 'GRMN0195';
     seq_num = opt.mot2d_test_nums(seq_idx);
+    img_folder = fullfile(opt.mot,'GRMN0195','img1');
     
+    seq_name ='KITTI-tracking';
+    img_folder = fullfile(opt.mot,seq_name,'test','image_02','0003');
+    seq_num = size(dir([img_folder '/*.png']),1)
+
     % build the dres structure for images
     filename = sprintf('%s/%s_dres_image.mat', opt.results, seq_name);
-    if exist(filename, 'file') ~= 0
-        object = load(filename);
-        dres_image = object.dres_image;
-        fprintf('load images from file %s done\n', filename);
-    else
-        dres_image = read_dres_image(opt, seq_set, seq_name, seq_num);
+%     if exist(filename, 'file') ~= 0
+%         object = load(filename);
+%         dres_image = object.dres_image;
+%         fprintf('load images from file %s done\n', filename);
+%     else
+%         dres_image = read_dres_image(opt, seq_set, seq_name, seq_num);
+        dres_image = read_dres_image(opt, seq_set, img_folder, seq_num,sample_interval);
         fprintf('read images done\n');
-        save(filename, 'dres_image', '-v7.3');
-    end
+%         save(filename, 'dres_image', '-v7.3');
+%     end
     
     % read tracking results
-    filename = sprintf('results_MOT/results_MOT_1/%s.txt', seq_name);
-    dres_track = read_mot2dres(filename);
+    filename = sprintf('results/%s.txt', img_folder(end-3:end));
+%     filename = sprintf('results_MOT/results_MOT_1/%s.txt', seq_name);
+    dres_track = read_mot2dres(filename,sample_interval);
     fprintf('read tracking results from %s\n', filename);
     ids = unique(dres_track.id);
     cmap = colormap(hsv(numel(ids)));
     cmap = cmap(randperm(numel(ids)),:);
     
     if is_save
-        result_dir = sprintf('results_MOT/results_MOT_1/%s', seq_name);
+        result_dir = sprintf('results_MOT/results_MOT_1/%s', img_folder(end-3:end));
         if exist(result_dir, 'dir') == 0
             mkdir(result_dir);
         end

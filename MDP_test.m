@@ -6,7 +6,8 @@
 % --------------------------------------------------------
 %
 % testing MDP
-function metrics = MDP_test(seq_idx, seq_set, tracker)
+% function metrics = MDP_test(seq_idx, seq_set, tracker)
+function metrics = MDP_test(seq_idx, seq_set, test_num, tracker)
 
 is_show = 0;   % set is_show to 1 to show tracking results in testing
 is_save = 1;   % set is_save to 1 to save tracking result
@@ -16,6 +17,7 @@ is_pause = 0;  % set is_pause to 1 to debug
 opt = globals();
 opt.is_text = is_text;
 opt.exit_threshold = 0.7;
+sample_interval = 1;
 
 if is_show
     close all;
@@ -28,22 +30,31 @@ else
     seq_name = opt.mot2d_test_seqs{seq_idx};
     seq_num = opt.mot2d_test_nums(seq_idx);
 end
+% seq_name ='GRMN0195';
+% img_folder = fullfile(opt.mot,'GRMN0195','img1');
+seq_name ='KITTI-tracking';
+img_folder = fullfile(opt.mot,seq_name,'test','image_02',test_num);
+seq_num = size(dir([img_folder '/*.png']),1)
 
+% seq_num = 1800
 % build the dres structure for images
 filename = sprintf('%s/%s_dres_image.mat', opt.results, seq_name);
-if exist(filename, 'file') ~= 0
-    object = load(filename);
-    dres_image = object.dres_image;
-    fprintf('load images from file %s done\n', filename);
-else
-    dres_image = read_dres_image(opt, seq_set, seq_name, seq_num);
+% if exist(filename, 'file') ~= 0
+%     object = load(filename);
+%     dres_image = object.dres_image;
+%     fprintf('load images from file %s done\n', filename);
+% else
+%     dres_image = read_dres_image(opt, seq_set, seq_name, seq_num);
+    dres_image = read_dres_image(opt, seq_set, img_folder, seq_num,sample_interval);
     fprintf('read images done\n');
     save(filename, 'dres_image', '-v7.3');
-end
+% end
 
 % read detections
-filename = fullfile(opt.mot, opt.mot2d, seq_set, seq_name, 'det', 'det.txt');
-dres_det = read_mot2dres(filename);
+% filename = fullfile(opt.mot, opt.mot2d, seq_set, seq_name, 'det', 'det.txt');
+% filename = fullfile(opt.mot,'GRMN0195','det','det.txt')
+filename = fullfile(opt.mot,seq_name,'test','det',[test_num,'.txt'])
+dres_det = read_mot2dres(filename,sample_interval);
 
 if strcmp(seq_set, 'train') == 1
     % read ground truth
@@ -53,7 +64,7 @@ if strcmp(seq_set, 'train') == 1
 end
 
 % load the trained model
-if nargin < 3
+if nargin < 4
     object = load('tracker.mat');
     tracker = object.tracker;
 end
@@ -157,20 +168,20 @@ for fr = 1:seq_num
         show_dres(fr, dres_image.I{fr}, 'Tracking', dres_track, 2);
 
         % show lost targets
-        subplot(2, 2, 4);
+        subplot(2, 2, 4);                                    
         show_dres(fr, dres_image.I{fr}, 'Lost', dres_track, 3);
 
         if is_pause
             pause();
         else
-            pause(0.01);
+            pause(0.01);                                         
         end
     end  
 end
 
 % write tracking results
-filename = sprintf('%s/%s.txt', opt.results, seq_name);
-fprintf('write results: %s\n', filename);
+filename = sprintf('%s/%s.txt', opt.results, test_num);%seq_name
+fprintf('write results: %s\n', filename);                                                               
 write_tracking_results(filename, dres_track, opt.tracked);
 
 % evaluation
